@@ -4,10 +4,25 @@ services:
   backend:
     build:
       context: .
+      dockerfile: Dockerfile.local
     container_name: daiichi-backend
     ports:
       - "8000:8000"
     volumes:
       - ./app:/app/app
+    env_file:
+      - .env.local
+  db:
+    image: postgres:15
+    container_name: daiichi-db
     environment:
-      - PYTHONUNBUFFERED=1
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:

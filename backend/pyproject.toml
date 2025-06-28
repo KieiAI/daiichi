@@ -2,16 +2,21 @@
 name = "daiichi-backend"
 version = "0.1.0"
 description = ""
-authors = [
-  {name = "kankankanp", email = "minamikan0825@gmail.com"}
-]
+authors = ["Your Name <your@email.com>"]
 readme = "README.md"
-requires-python = ">=3.12"
 
 [tool.poetry.dependencies]
 python = "^3.12"
 fastapi = "^0.115.11"
 uvicorn = "^0.34.0"
+langchain = "^0.3.26"
+langchain-openai = "^0.3.27"
+langchain-community = "^0.3.26"
+azure-search-documents = "^11.5.3"
+azure-identity = "^1.23.0"
+
+[tool.poetry.group.dev.dependencies]
+python-dotenv = "^1.1.1"
 
 [build-system]
 requires = ["poetry-core"]

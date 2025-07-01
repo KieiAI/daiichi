@@ -12,12 +12,28 @@ resource "azurerm_linux_web_app" "app" {
   location            = var.location
   service_plan_id     = azurerm_service_plan.plan.id
 
+  identity {
+    type = "SystemAssigned"
+  }
+
   site_config {
-    linux_fx_version = "DOCKER|${var.acr_login_server}/backend:latest"
-    always_on        = true
+    always_on = true
   }
 
   app_settings = {
-    WEBSITES_PORT = "8000"
+    WEBSITES_PORT            = "8000"
+    DOCKER_CUSTOM_IMAGE_NAME = "${var.acr_login_server}/backend:latest"
   }
 }
+
+data "azurerm_container_registry" "acr" {
+  name                = "daiichicontainerregistry"
+  resource_group_name = var.resource_group_name
+}
+
+resource "azurerm_role_assignment" "acr_pull_role" {
+  scope                = data.azurerm_container_registry.acr.id
+  role_definition_name = "AcrPull"
+  principal_id         = azurerm_linux_web_app.app.identity[0].principal_id
+}
+

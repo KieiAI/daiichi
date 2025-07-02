@@ -30,10 +30,3 @@ data "azurerm_container_registry" "acr" {
   name                = "daiichicontainerregistry"
   resource_group_name = var.resource_group_name
 }
-
-resource "azurerm_role_assignment" "acr_pull_role" {
-  scope                = data.azurerm_container_registry.acr.id
-  role_definition_name = "AcrPull"
-  principal_id         = azurerm_linux_web_app.app.identity[0].principal_id
-}
-

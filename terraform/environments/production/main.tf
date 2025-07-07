@@ -31,7 +31,7 @@ module "postgresql" {
   admin_password      = "DaiichiPassword123!"
   sku_name            = "B_Standard_B1ms"
   db_version          = "12"
-  db_name             = "daiichi_db-develop"
+  db_name             = "daiichi_db"
 }
 
 module "key_vault" {

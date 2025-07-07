@@ -25,8 +25,3 @@ resource "azurerm_linux_web_app" "app" {
     DOCKER_CUSTOM_IMAGE_NAME = "${var.acr_login_server}/backend:latest"
   }
 }
-
-data "azurerm_container_registry" "acr" {
-  name                = "daiichicontainerregistry"
-  resource_group_name = var.resource_group_name
-}

@@ -34,7 +34,7 @@
 3. 解析情報をCognitive Search (ベクトルDB)に登録
 4. OpenAIでリスクアセスメントやチャット生成
 5. 結果をDBに保存
-![システムフロー図](./assets/architecture.jpg)
+![システムフロー図](./assets/architecture_v2.jpg)
 
 ## ブランチ管理
 - main

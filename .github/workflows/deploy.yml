@@ -1,16 +1,74 @@
-name: Terraform Deploy
+name: daiichi-deploy
 
 on:
   push:
     paths:
-      - 'terraform/**'
-      - '.github/workflows/deploy.yml'
+      - "terraform/**"
+      - ".github/workflows/deploy.yml"
+      - "frontend/**"
+      - "backend/**"
     branches:
       - main
 
 jobs:
+  lint-frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Prettier (format check)
+        run: npx prettier . --check
+
+      - name: Run ESLint
+        run: npx eslint . --ext .ts,.tsx,.js,.jsx
+
+  lint-backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Configure Poetry virtualenv
+        run: poetry config virtualenvs.create false
+
+      - name: Install dependencies
+        run: poetry install --no-interaction --no-root
+
+      - name: Run Black (format check)
+        run: poetry run black --check .
+
+      - name: Run Ruff (static analysis)
+        run: poetry run ruff check .
   terraform:
     runs-on: ubuntu-latest
+    needs: [lint-frontend, lint-backend]
 
     steps:
       - name: Checkout repository
@@ -29,15 +87,15 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-        working-directory: ./terraform/environments/develop
+        working-directory: ./terraform/environments/production
 
       - name: Terraform Plan
         run: terraform plan
-        working-directory: ./terraform/environments/develop
+        working-directory: ./terraform/environments/production
 
       - name: Terraform Apply
         run: terraform apply -auto-approve
-        working-directory: ./terraform/environments/develop
+        working-directory: ./terraform/environments/production
         env:
           ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}

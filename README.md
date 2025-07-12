@@ -73,6 +73,10 @@ npm install
 随時更新します。
 
 ### バックエンド環境
-随時更新します。
-
+- データベース
+  - マイグレーションファイルの作成
+    ```docker-compose exec backend poetry run alembic revision --autogenerate -m "{マイグレーションファイル1行目に表示されるメッセージ}"```
+  - マイグレーションの実行
+    ```docker-compose exec backend poetry run alembic upgrade head```
+  
 

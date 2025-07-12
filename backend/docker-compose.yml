@@ -10,6 +10,8 @@ services:
       - "8000:8000"
     volumes:
       - ./app:/app/app
+      - ./alembic.ini:/app/alembic.ini
+      - ./alembic:/app/alembic
     env_file:
       - .env.local
   db:

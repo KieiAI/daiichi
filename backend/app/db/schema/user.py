@@ -3,7 +3,7 @@ from typing import Optional
 
 class UserBase(BaseModel):
     """ユーザーの基本情報スキーマ"""
-    username: str
+    name: str
     email: Optional[EmailStr] = None
     full_name: Optional[str] = None
 

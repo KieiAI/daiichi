@@ -78,5 +78,7 @@ npm install
     ```docker-compose exec backend poetry run alembic revision --autogenerate -m "{マイグレーションファイル1行目に表示されるメッセージ}"```
   - マイグレーションの実行
     ```docker-compose exec backend poetry run alembic upgrade head```
+  - テーブルの中身を確認
+    ```docker-compose exec db psql -U postgres -d postgres -c "SELECT id, name, email, role, is_active, hashed_password FROM users;"```
   
 

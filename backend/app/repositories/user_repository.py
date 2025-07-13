@@ -12,9 +12,9 @@ class UserRepository:
         """IDでユーザーを取得します。"""
         return self.db.query(User).filter(User.id == user_id).first()
 
-    def get_user_by_username(self, username: str) -> Optional[User]:
+    def get_user_by_name(self, name: str) -> Optional[User]:
         """ユーザー名でユーザーを取得"""
-        return self.db.query(User).filter(User.username == username).first()
+        return self.db.query(User).filter(User.name == name).first()
 
     def get_user_by_email(self, email: str) -> Optional[User]:
         """メールアドレスのユーザーを取得"""
@@ -26,7 +26,7 @@ class UserRepository:
     def create_user(self, user: UserCreate, hashed_password: Optional[str] = None) -> User:
         """新しいユーザーの作成"""
         db_user = User(
-            username=user.username,
+            name=user.name,
             email=user.email,
             full_name=user.full_name,
             hashed_password=hashed_password,

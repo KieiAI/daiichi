@@ -1,10 +1,10 @@
 # app/middleware/auth.py
+from app.db.db import SessionLocal
 from fastapi import Request, Response, HTTPException, status
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.responses import JSONResponse
-from app.services.auth_service import AuthService # REVOKED_ACCESS_TOKENS, REVOKED_REFRESH_TOKENSは削除された
+from app.services.auth_service import AuthService
 from app.repositories.user_repository import UserRepository
-from app.db.database import SessionLocal
 from app.db.schema.user import UserInfo
 
 class AuthMiddleware(BaseHTTPMiddleware):

@@ -19,24 +19,15 @@ class AuthUseCase:
     def __init__(self, user_repo: UserRepository):
         self.user_repo = user_repo
 
-    # def get_user_info(self, user_id: int) -> UserInfo:
-    #     """指定されたIDのユーザー情報を取得します。"""
-    #     user = self.user_repo.get_user_by_id(user_id)
-    #     if not user:
-    #         raise HTTPException(
-    #             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-    #         )
-    #     return UserInfo.model_validate(user)
-
-    def login(self, username: str, password: str, response: Response) -> LoginResponse:
+    def login(self, name: str, password: str, response: Response) -> LoginResponse:
         """
         アクセストークンとリフレッシュトークンをCookieに設定
         """
-        user = self.user_repo.get_user_by_username(username)
+        user = self.user_repo.get_user_by_name(name)
         if not user or not user.hashed_password or not AuthService.verify_password(password, user.hashed_password):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect username or password",
+                detail="Incorrect name or password",
                 headers={"WWW-Authenticate": "Bearer"}, # ヘッダーは形式上残すが、Cookie使用
             )
         
@@ -187,13 +178,13 @@ class AuthUseCase:
     #     user = self.user_repo.get_user_by_google_id(google_user_id)
     #     if not user:
     #         # 新規ユーザー登録
-    #         username = email.split('@')[0] if email else google_user_id # メールアドレスからユーザー名生成、またはGoogle ID
+    #         name = email.split('@')[0] if email else google_user_id # メールアドレスからユーザー名生成、またはGoogle ID
     #         # ユニークなユーザー名にするための簡易的な処理 (衝突する可能性あり)
-    #         if self.user_repo.get_user_by_username(username):
-    #             username = f"{username}_{str(uuid.uuid4())[:8]}"
+    #         if self.user_repo.get_user_by_name(name):
+    #             name = f"{name}_{str(uuid.uuid4())[:8]}"
 
     #         user_create = UserCreate(
-    #             username=username,
+    #             name=name,
     #             email=email,
     #             full_name=name,
     #             google_id=google_user_id,

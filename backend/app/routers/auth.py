@@ -1,13 +1,13 @@
+from app.db.db import get_db
 from fastapi import APIRouter, Depends, Response, Request, HTTPException, status
 from sqlalchemy.orm import Session
-from app.db.database import get_db
 from app.repositories.user_repository import UserRepository
 from app.usecases.auth_usecase import AuthUseCase, GOOGLE_CLIENT_ID, GOOGLE_REDIRECT_URI
 from app.db.schema.auth import LoginRequest, LoginResponse
 from app.db.schema.user import UserInfo
 from app.services.auth_service import AuthService
 from urllib.parse import urlencode
-import uuid # state生成用
+import uuid
 
 router = APIRouter()
 
@@ -41,7 +41,7 @@ async def login(
     認証成功後、アクセストークンとリフレッシュトークンをHttpOnly Secure Cookieに設定します。
     """
     usecase = AuthUseCase(UserRepository(db))
-    return usecase.login(login_data.username, login_data.password, response)
+    return usecase.login(login_data.name, login_data.password, response)
 
 @router.get("/auth/google")
 async def google_auth_start(request: Request):

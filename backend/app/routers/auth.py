@@ -11,74 +11,63 @@ import uuid
 
 router = APIRouter()
 
-# --- 依存性注入: 現在のユーザーを取得 ---
-# この関数は、ミドルウェアによってリクエストのstateに設定されたユーザー情報を取得します。
-# 認証ロジック自体はミドルウェアが担当するため、この関数はシンプルになります。
 async def get_current_user(request: Request) -> UserInfo:
-    """
-    認証済みユーザーの情報を取得します。
-    ミドルウェアが認証を処理し、request.state.userにユーザー情報をアタッチします。
-    """
-    user_info = request.state.user # ミドルウェアで設定されたユーザー情報を取得
+    user_info = request.state.user
     if not user_info:
-        # このエラーは通常、ミドルウェアが正しく動作しなかった場合にのみ発生します。
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication required: User info not found in request state."
         )
     return user_info
 
-# --- 認証関連のエンドポイント ---
-
 @router.post("/login", response_model=LoginResponse)
 async def login(
     login_data: LoginRequest,
-    response: Response, # FastAPIのResponseオブジェクトを注入
-    db: Session = Depends(get_db)
-):
-    """
-    ユーザー名とパスワードによるログイン。
-    認証成功後、アクセストークンとリフレッシュトークンをHttpOnly Secure Cookieに設定します。
-    """
-    usecase = AuthUseCase(UserRepository(db))
-    return usecase.login(login_data.name, login_data.password, response)
-
-@router.get("/auth/google")
-async def google_auth_start(request: Request):
-    """
-    Google OAuth認証フローを開始します。
-    ユーザーをGoogle認証ページにリダイレクトするためのURLを返します。
-    """
-    # CSRF対策のためのstateパラメータを生成し、セッションに保存
-    state = str(uuid.uuid4())
-    request.session["oauth_state"] = state
-
-    params = {
-        "response_type": "code",
-        "client_id": GOOGLE_CLIENT_ID,
-        "redirect_uri": GOOGLE_REDIRECT_URI,
-        "scope": "openid email profile", # 必要なスコープを指定
-        "state": state,
-        "access_type": "offline" # リフレッシュトークンが必要な場合
-    }
-    google_auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?{urlencode(params)}"
-    return {"url": google_auth_url} # フロントエンドにリダイレクトURLを返す
-
-@router.get("/auth/google/callback", response_model=LoginResponse)
-async def google_auth_callback(
-    code: str,
-    state: str,
-    request: Request,
     response: Response,
     db: Session = Depends(get_db)
 ):
     """
-    Google OAuth認証のコールバックエンドポイント。
-    Googleからの認証コードを受け取り、トークンを交換してユーザーを認証します。
-    認証成功後、アクセストークンとリフレッシュトークンをHttpOnly Secure Cookieに設定します。
+    ログイン後、アクセストークンとリフレッシュトークンをCookieに設定
     """
     usecase = AuthUseCase(UserRepository(db))
-    return await usecase.google_login(code, state, request, response)
+    return usecase.login(login_data.name, login_data.password, response)
+
+# @router.get("/auth/google")
+# async def google_auth_start(request: Request):
+#     """
+#     Google OAuth認証フローを開始します。
+#     ユーザーをGoogle認証ページにリダイレクトするためのURLを返します。
+#     """
+#     # CSRF対策のためのstateパラメータを生成し、セッションに保存
+#     state = str(uuid.uuid4())
+#     request.session["oauth_state"] = state
+
+#     params = {
+#         "response_type": "code",
+#         "client_id": GOOGLE_CLIENT_ID,
+#         "redirect_uri": GOOGLE_REDIRECT_URI,
+#         "scope": "openid email profile", # 必要なスコープを指定
+#         "state": state,
+#         "access_type": "offline" # リフレッシュトークンが必要な場合
+#     }
+#     google_auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?{urlencode(params)}"
+#     return {"url": google_auth_url} # フロントエンドにリダイレクトURLを返す
+
+# @router.get("/auth/google/callback", response_model=LoginResponse)
+# async def google_auth_callback(
+#     code: str,
+#     state: str,
+#     request: Request,
+#     response: Response,
+#     db: Session = Depends(get_db)
+# ):
+#     """
+#     Google OAuth認証のコールバックエンドポイント。
+#     Googleからの認証コードを受け取り、トークンを交換してユーザーを認証します。
+#     認証成功後、アクセストークンとリフレッシュトークンをHttpOnly Secure Cookieに設定します。
+#     """
+#     usecase = AuthUseCase(UserRepository(db))
+#     return await usecase.google_login(code, state, request, response)
 
 @router.post("/refresh", response_model=LoginResponse)
 async def refresh_tokens(
@@ -87,8 +76,7 @@ async def refresh_tokens(
     db: Session = Depends(get_db)
 ):
     """
-    リフレッシュトークンを使用して新しいアクセストークンとリフレッシュトークンを取得します。
-    Cookieからリフレッシュトークンを読み取り、検証後に新しいトークンをCookieに設定します。
+    Cookieからリフレッシュトークンを読み取り、検証後に新しいトークンをCookieに設定
     """
     usecase = AuthUseCase(UserRepository(db))
     return usecase.refresh_tokens(request, response)
@@ -101,17 +89,7 @@ async def logout(
     current_user: UserInfo = Depends(get_current_user) # ログアウトは認証済みユーザーのみ可能とする
 ):
     """
-    ユーザーをログアウトさせ、Cookieから認証トークンを削除し、トークンを無効化します。
+    Cookieから認証トークンを削除
     """
     usecase = AuthUseCase(UserRepository(db))
     return usecase.logout(request, response)
-
-# --- 保護されたエンドポイント例 ---
-
-@router.get("/users/me/", response_model=UserInfo)
-async def read_users_me(current_user: UserInfo = Depends(get_current_user)):
-    """
-    認証済みの現在のユーザー情報を返します。
-    このエンドポイントはAuthMiddlewareによって保護されています。
-    """
-    return current_user

@@ -28,10 +28,8 @@ class UserRepository:
         db_user = User(
             name=user.name,
             email=user.email,
-            full_name=user.full_name,
             hashed_password=hashed_password,
-            google_id=user.google_id,
-            is_active=True # 新規作成時はアクティブ
+            role=user.role
         )
         self.db.add(db_user)
         self.db.commit()

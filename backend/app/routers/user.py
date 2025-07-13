@@ -1,8 +1,12 @@
-from app.db.schema.auth import UserInfo
+from app.db.schema.user import UserInfo
 from app.usecases.auth_usecase import AuthUseCase
 from app.repositories.user_repository import UserRepository
-from fastapi import APIRouter
-
+from app.db.schema.user import UserCreate
+from app.routers.auth import get_current_user
+from app.db.db import get_db
+from app.usecases.user_usecase import UserUseCase
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
 router = APIRouter()
 
@@ -13,9 +17,9 @@ async def get_current_user_info(
     usecase = AuthUseCase(UserRepository(db))
     return usecase.get_user_info(current_user)
 
-@router.post("/create", response_model=UserInfo)
+@router.post("/create")
 async def create_user(
     user_create: UserCreate, db: Session = Depends(get_db)
 ):
-    usecase = AuthUseCase(UserRepository(db))
+    usecase = UserRepository(db)
     return usecase.create_user(user_create)

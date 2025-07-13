@@ -1,6 +1,7 @@
 import os
 from app.middleware.auth_middleware import AuthMiddleware
 from app.routers import auth
+from app.routers import user
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 from app.db.db import get_db
@@ -29,9 +30,8 @@ app.add_middleware(
 app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET_KEY)
 app.add_middleware(AuthMiddleware)
 
-app.include_router(auth.router, prefix="/api/v1", tags=[""])
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
-app.include_router(auth.router, prefix="/api/v1/user", tags=["user"])
+app.include_router(user.router, prefix="/api/v1/user", tags=["user"])
 
 
 @app.get("/health")

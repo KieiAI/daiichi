@@ -2,8 +2,6 @@ from fastapi import HTTPException, status
 from app.db.schema.user import UserInfo
 from app.repositories.user_repository import UserRepository
 
-
-
 class UserUseCase:
     def __init__(self, user_repo: UserRepository):
         self.user_repo = user_repo
@@ -18,6 +16,5 @@ class UserUseCase:
         return UserInfo(
             name=user.name,
             email=user.email,
-            full_name=user.full_name,
             is_active=user.is_active,
         )

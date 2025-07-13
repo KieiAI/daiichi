@@ -8,8 +8,7 @@ import uuid
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# 環境変数から読み込む。本番環境では必ず設定すること
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-super-secret-and-very-long-key-replace-me-with-env-variable")
+SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 15
 REFRESH_TOKEN_EXPIRE_DAYS = 7
@@ -58,7 +57,6 @@ class AuthService:
     def verify_token(token: str, token_type: str) -> Optional[dict]:
         """
         トークンの検証
-
         """
         try:
             payload = jwt.decode(token, AuthService.SECRET_KEY, algorithms=[AuthService.ALGORITHM])

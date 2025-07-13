@@ -19,11 +19,19 @@ sqlalchemy = "^2.0.41"
 psycopg2-binary = "^2.9.9"
 alembic = "^1.13.1"
 dotenv = "^0.9.9"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+python-multipart = "^0.0.9"
 
 [tool.poetry.group.dev.dependencies]
 python-dotenv = "^1.1.1"
 black = "^25.1.0"
 ruff = "^0.12.2"
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+skip-string-normalization = true
 
 [build-system]
 requires = ["poetry-core"]

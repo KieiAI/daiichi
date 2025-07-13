@@ -5,7 +5,6 @@ from app.db.schema.user import UserCreate
 from typing import Optional
 
 class UserRepository:
-    """ユーザー関連のデータベース操作を管理するリポジトリクラス"""
     def __init__(self, db: Session):
         self.db = db
 
@@ -14,19 +13,18 @@ class UserRepository:
         return self.db.query(User).filter(User.id == user_id).first()
 
     def get_user_by_username(self, username: str) -> Optional[User]:
-        """ユーザー名でユーザーを取得します。"""
+        """ユーザー名でユーザーを取得"""
         return self.db.query(User).filter(User.username == username).first()
 
     def get_user_by_email(self, email: str) -> Optional[User]:
-        """メールアドレスでユーザーを取得します。"""
+        """メールアドレスのユーザーを取得"""
         return self.db.query(User).filter(User.email == email).first()
-
-    def get_user_by_google_id(self, google_id: str) -> Optional[User]:
-        """Google IDでユーザーを取得します。"""
-        return self.db.query(User).filter(User.google_id == google_id).first()
+    # def get_user_by_google_id(self, google_id: str) -> Optional[User]:
+    #     """Google IDでユーザーを取得します。"""
+    #     return self.db.query(User).filter(User.google_id == google_id).first()
 
     def create_user(self, user: UserCreate, hashed_password: Optional[str] = None) -> User:
-        """新しいユーザーを作成します。"""
+        """新しいユーザーの作成"""
         db_user = User(
             username=user.username,
             email=user.email,

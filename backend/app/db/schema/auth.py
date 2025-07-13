@@ -12,7 +12,6 @@ class TokenData(BaseModel):
     jti: Optional[str] = None
     type: str
 
-
 class LoginResponse(BaseModel):
     """ログインレスポンスのスキーマ"""
     message: str = "Login successful"

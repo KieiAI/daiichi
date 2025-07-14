@@ -1,4 +1,4 @@
-## 概要
+# 概要
 第一施設工業工業様のリスクアセスメントRAGシステムです。
 
 ## 主な使用技術
@@ -6,7 +6,6 @@
   - 言語：TypeScript
   - フレームワーク：Next.js(App Router)
   - スタイル：Tailwind CSS
-  - 状態管理：未定
   - コード整形・静的解析：Prettier・ESLint
   - デプロイ：Vercel
 - バックエンド
@@ -49,43 +48,129 @@
      - 例: feature/2-create-frontend
 
 
-## 開発環境
-### 前提条件
+# フロントエンド環境
+## 前提条件
 - Node.js(v22.6以上)
 - npm(v10.8以上)
-- Git
+
+## パッケージのインストール
+```
+# frontendディレクトリに移動
+cd frontend
+
+# パッケージのインストール
+npm install
+```
+
+## ローカルサーバーの起動
+`npm run dev`を実行後、http://localhost:3000 にアクセス
+
+## ディレクトリ構成
+```
+frontend/
+├── app/                # ページルーティング定義
+├── api-client/         # 自動生成したAPIクライアントコード
+├── components/         # UIコンポーネント群
+├── fetch/              # API通信のラッパー関数
+├── hooks/              # React用のカスタムフック
+├── lib/                # 汎用ロジックやユーティリティ関数
+├── types/              # 型定義
+├── openapi.json        # FastAPIから出力されたOpenAPIスキーマファイル
+└── package.json        # 依存パッケージ・スクリプト定義
+```
+
+## APIクライアントコードの自動生成
+  ```
+  # openapi.jsonの更新
+  curl http://localhost:8000/openapi.json -o openapi.json
+  # frontendディレクトリに移動
+  cd frontend
+  # OpenAPI GeneratorによるTypeScriptクライアントの生成
+  npm run gen
+  ```
+
+# バックエンド環境
+## 環境構築
+### 前提条件
 - Docker
 
 ### パッケージのインストール
 ```
-cd frontend
-npm install
+# backendディレクトリに移動
+cd backend
+# backendコンテナに直接入る
+docker-compose exec -it backend bash
+# コンテナ内でインストール
+poetry install
+```
+
+### 環境変数の設定
+```
+cp .env.example .env.local
 ```
 
 ### ローカルサーバーの起動
-- フロントエンド
-`npm run dev`を実行後、http://localhost:3000 にアクセス
-
-- バックエンド
 `docker-compose up --build`を実行後、http://localhost:8000 にアクセス
 
-### フロントエンド環境
-- APIクライアントコードの自動生成
-  - openapi.jsonの更新
-  ```curl http://localhost:8000/openapi.json -o openapi.json```
-  - OpenAPI GeneratorによるTypeScriptクライアントの生成
-  ```
-  cd frontend
-  npm run gen
-  ```
+## ディレクトリ構成
+```
+backend/
+├── alembic/                      # DBマイグレーション管理
+│   ├── versions/                 # マイグレーションファイル
+│   ├── env.py                    # Alembic環境設定
+│   └── script.py.mako            # マイグレーション用テンプレート
+├── app/                          
+│   ├── db/                       # DB接続とモデル定義
+│   │   ├── db.py                 # SQLAlchemyのSession管理、DB接続設定
+│   │   ├── models/               # ORMモデル定義
+│   │   └── schemas/              # \Pydanticスキーマ
+│   ├── middleware/               # ミドルウェア
+│   ├── repositories/             # DBアクセス層
+│   ├── usecases/                 # ビジネスロジック層
+│   ├── routers/                  # FastAPIのルーター定義
+│   ├── services/                 # 外部サービス連携
+│   └── main.py                   # アプリのエントリーポイント
+├── docker-compose.yml            # 開発用Docker構成
+├── Dockerfile                    # FastAPIのDockerイメージ定義
+├── pyproject.toml                # Poetry設定ファイル
+└── .env.local                    # 環境変数（ローカル用）
+```
 
-### バックエンド環境
-- データベース
-  - マイグレーションファイルの作成
-    ```docker-compose exec backend poetry run alembic revision --autogenerate -m "{マイグレーションファイル1行目に表示されるメッセージ}"```
-  - マイグレーションの実行
-    ```docker-compose exec backend poetry run alembic upgrade head```
-  - テーブルの中身を確認
-    ```docker-compose exec db psql -U postgres -d postgres -c "SELECT id, name, email, role, is_active, hashed_password FROM users;"```
-  
+### レイヤー構成
+DDD にインスパイアされたレイヤー構成で、責務ごとにディレクトリを分割
+- routers/：HTTP リクエストのエントリーポイント（Controller 的役割）
+- usecase/：ユースケース（ビジネスロジック）を定義
+- repositories/：データの取得・更新など、永続化層とのやり取りを定義
+- services/：Firebase などの外部 API やクラウドサービスと連携
+- schemas/：リクエスト・レスポンスや DB スキーマの型定義
+
+## 開発ガイド
+### DBのマイグレーション・テーブルの確認
+```
+# backendコンテナに直接入る
+docker-compose exec -it backend bash
+# マイグレーションファイルの作成
+poetry run alembic revision --autogenerate -m "<メッセージ>"
+# マイグレーションの実行
+poetry run alembic upgrade head
+```
+
+```
+# dbコンテナに直接入る
+docker-compose exec -it db bash
+# PostgreSQLに移動
+psql -U postgres -d postgres
+# 特定のテーブルの中身を確認
+SELECT * FROM users;
+# テーブル一覧を確認
+\dt:
+```
+
+### APIドキュメントの確認
+```
+# Swagger UIの確認
+localhost:8000/docs
+# openapi.jsonの確認
+localhost:8000/openapi.json
+```
 

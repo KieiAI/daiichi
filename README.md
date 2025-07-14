@@ -70,7 +70,14 @@ npm install
 `docker-compose up --build`を実行後、http://localhost:8000 にアクセス
 
 ### フロントエンド環境
-随時更新します。
+- APIクライアントコードの自動生成
+  - openapi.jsonの更新
+  ```curl http://localhost:8000/openapi.json -o openapi.json```
+  - OpenAPI GeneratorによるTypeScriptクライアントの生成
+  ```
+  cd frontend
+  npm run gen
+  ```
 
 ### バックエンド環境
 - データベース

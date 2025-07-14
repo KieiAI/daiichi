@@ -15,6 +15,7 @@ class UserCreate(UserBase):
 class UserInfo(UserBase):
     """APIレスポンス用のユーザー情報スキーマ"""
     is_active: bool
+    email: Optional[EmailStr] = None
 
     class Config:
         from_attributes = True

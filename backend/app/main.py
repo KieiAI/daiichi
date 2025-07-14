@@ -9,11 +9,12 @@ from app.db.models import User, History
 from app.usecases.user_usecase import UserUseCase
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
+import json
+from pathlib import Path
 
 
 app = FastAPI()
 SESSION_SECRET_KEY = os.getenv("SESSION_SECRET_KEY")
-
 
 origins = [
     "http://localhost:3000",

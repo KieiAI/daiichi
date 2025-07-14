@@ -1,22 +1,14 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import { 
-  Shield, 
-  Eye, 
-  EyeOff, 
-  Mail,
-  Lock,
-  AlertCircle,
-  Building2
-} from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { login } from "@/fetch/auth";
+import { useToast } from "@/hooks/use-toast";
+import { AlertCircle, Eye, EyeOff, Lock, Mail } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface LoginForm {
   email: string;
@@ -32,9 +24,9 @@ interface ValidationErrors {
 
 export default function LoginPage() {
   const [form, setForm] = useState<LoginForm>({
-    email: '',
-    password: '',
-    rememberMe: false
+    email: "",
+    password: "",
+    rememberMe: false,
   });
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [showPassword, setShowPassword] = useState(false);
@@ -42,27 +34,28 @@ export default function LoginPage() {
   const { toast } = useToast();
   const router = useRouter();
 
-  // フォーム入力の処理
-  const handleInputChange = (field: keyof LoginForm, value: string | boolean) => {
-    setForm(prev => ({ ...prev, [field]: value }));
+  const handleInputChange = (
+    field: keyof LoginForm,
+    value: string | boolean
+  ) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
     // エラーをクリア
     if (errors[field as keyof ValidationErrors]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }));
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
   };
 
-  // バリデーション
   const validateForm = (): boolean => {
     const newErrors: ValidationErrors = {};
 
     if (!form.email) {
-      newErrors.email = 'メールアドレスを入力してください';
+      newErrors.email = "メールアドレスを入力してください";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-      newErrors.email = '有効なメールアドレスを入力してください';
+      newErrors.email = "有効なメールアドレスを入力してください";
     }
 
     if (!form.password) {
-      newErrors.password = 'パスワードを入力してください';
+      newErrors.password = "パスワードを入力してください";
     }
 
     setErrors(newErrors);
@@ -72,7 +65,7 @@ export default function LoginPage() {
   // ログイン処理（模擬）
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -81,26 +74,17 @@ export default function LoginPage() {
     setErrors({});
 
     try {
-      // 模擬的なログイン処理
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const res = await login(form.email, form.password);
+      console.log(res);
 
-      // 模擬的な認証チェック
-      if (form.email === 'admin@example.com' && form.password === 'password') {
-        toast({
-          title: 'ログイン成功',
-          description: 'システムにログインしました',
-        });
-
-        router.push('/');
-      } else {
-        setErrors({
-          general: 'メールアドレスまたはパスワードが正しくありません'
-        });
-      }
-    } catch (error) {
-      setErrors({
-        general: 'ログイン中にエラーが発生しました'
+      toast({
+        title: "ログイン成功",
+        description: "システムにログインしました",
       });
+
+      router.push("/");
+    } catch (error: unknown) {
+      throw error
     } finally {
       setIsLoading(false);
     }
@@ -134,7 +118,9 @@ export default function LoginPage() {
           <CardContent className="p-8">
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold text-white mb-2">ログイン</h2>
-              <p className="text-gray-300 text-sm">アカウントにサインインしてください</p>
+              <p className="text-gray-300 text-sm">
+                アカウントにサインインしてください
+              </p>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-6">
@@ -157,10 +143,10 @@ export default function LoginPage() {
                     id="email"
                     type="email"
                     value={form.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    onChange={(e) => handleInputChange("email", e.target.value)}
                     placeholder="your@email.com"
                     className={`pl-12 h-12 bg-gray-700 border-gray-600 text-white placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                      errors.email ? 'border-red-500 focus:ring-red-500' : ''
+                      errors.email ? "border-red-500 focus:ring-red-500" : ""
                     }`}
                     disabled={isLoading}
                   />
@@ -182,12 +168,14 @@ export default function LoginPage() {
                   <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
                   <Input
                     id="password"
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     value={form.password}
-                    onChange={(e) => handleInputChange('password', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("password", e.target.value)
+                    }
                     placeholder="パスワードを入力"
                     className={`pl-12 pr-12 h-12 bg-gray-700 border-gray-600 text-white placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                      errors.password ? 'border-red-500 focus:ring-red-500' : ''
+                      errors.password ? "border-red-500 focus:ring-red-500" : ""
                     }`}
                     disabled={isLoading}
                   />

@@ -15,25 +15,34 @@ AZURE_SEARCH_ENDPOINT = os.getenv("AZURE_SEARCH_ENDPOINT")
 AZURE_INDEX_NAME = os.getenv("AZURE_INDEX_NAME")
 VECTOR_DIM = 3072
 
+
 class RAGRequest(BaseModel):
     task: str
     element: str
 
+
 def get_openai_embedding(input_text: str) -> List[float]:
-    embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY, model="text-embedding-3-large")
+    embeddings = OpenAIEmbeddings(
+        openai_api_key=OPENAI_API_KEY, model="text-embedding-3-large"
+    )
     return embeddings.embed_query(input_text)
+
 
 def search_azure_vector(text: str) -> List[Dict[str, Any]]:
     vectorstore = AzureSearch(
-      azure_search_endpoint=AZURE_SEARCH_ENDPOINT,
-      azure_search_key=AZURE_API_KEY,
-      index_name=AZURE_INDEX_NAME,
-      embedding_function=OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY, model="text-embedding-3-large"),
-      fields={"vector": "contentVector"}
+        azure_search_endpoint=AZURE_SEARCH_ENDPOINT,
+        azure_search_key=AZURE_API_KEY,
+        index_name=AZURE_INDEX_NAME,
+        embedding_function=OpenAIEmbeddings(
+            openai_api_key=OPENAI_API_KEY, model="text-embedding-3-large"
+        ),
+        fields={"vector": "contentVector"},
     )
     docs_and_scores = vectorstore.similarity_search_with_score(text, k=10)
     docs = [doc for doc, _ in docs_and_scores]
     return docs
+
+
 def build_function_def(file_names: List[str]) -> list:
     return [
         {
@@ -52,16 +61,26 @@ def build_function_def(file_names: List[str]) -> list:
                                 "リスク低減措置": {"type": "string"},
                                 "対策分類": {
                                     "type": "string",
-                                    "enum": ["設計時対策", "工学的対策", "管理的対策", "個人用保護具"]
+                                    "enum": [
+                                        "設計時対策",
+                                        "工学的対策",
+                                        "管理的対策",
+                                        "個人用保護具",
+                                    ],
                                 },
                                 "使用ナレッジファイル名": {
                                     "type": "string",
-                                    "enum": file_names
-                                }
+                                    "enum": file_names,
+                                },
                             },
-                            "required": ["危険性・有害性", "リスク低減措置", "対策分類", "使用ナレッジファイル名"]
+                            "required": [
+                                "危険性・有害性",
+                                "リスク低減措置",
+                                "対策分類",
+                                "使用ナレッジファイル名",
+                            ],
                         },
-                        "maxItems": 5
+                        "maxItems": 5,
                     },
                     "llms": {
                         "type": "array",
@@ -73,22 +92,33 @@ def build_function_def(file_names: List[str]) -> list:
                                 "リスク低減措置": {"type": "string"},
                                 "対策分類": {
                                     "type": "string",
-                                    "enum": ["設計時対策", "工学的対策", "管理的対策", "個人用保護具"]
+                                    "enum": [
+                                        "設計時対策",
+                                        "工学的対策",
+                                        "管理的対策",
+                                        "個人用保護具",
+                                    ],
                                 },
                                 "使用ナレッジファイル名": {
                                     "type": "string",
-                                    "enum": ["LLMによる生成"]
-                                }
+                                    "enum": ["LLMによる生成"],
+                                },
                             },
-                            "required": ["危険性・有害性", "リスク低減措置", "対策分類", "使用ナレッジファイル名"]
+                            "required": [
+                                "危険性・有害性",
+                                "リスク低減措置",
+                                "対策分類",
+                                "使用ナレッジファイル名",
+                            ],
                         },
-                        "maxItems": 5
-                    }
+                        "maxItems": 5,
+                    },
                 },
-                "required": ["rags", "llms"]
-            }
+                "required": ["rags", "llms"],
+            },
         }
     ]
+
 
 def build_prompt(task: str, element: str, examples: str) -> str:
     return f"""
@@ -138,15 +168,19 @@ def build_prompt(task: str, element: str, examples: str) -> str:
 出力は必ず上記JSON形式（オブジェクトで"rags"と"llms"の2配列を持つ）でお願いします。
 """
 
+
 def call_chatgpt_with_function_calling(prompt: str, function_def: list) -> str:
-    llm = ChatOpenAI(openai_api_key=OPENAI_API_KEY, model="gpt-4-1106-preview", temperature=0)
+    llm = ChatOpenAI(
+        openai_api_key=OPENAI_API_KEY, model="gpt-4-1106-preview", temperature=0
+    )
     messages = [
         SystemMessage(content="あなたは労働安全衛生の専門家です。"),
-        HumanMessage(content=prompt)
+        HumanMessage(content=prompt),
     ]
     # LangChainのChatOpenAIはfunction_call直接指定は未対応のため、プロンプトで誘導
     response = llm(messages)
     return response.content
+
 
 @router.post("/")
 def run_rag_full4(req: RAGRequest):
@@ -168,12 +202,16 @@ def run_rag_full4(req: RAGRequest):
     if not docs:
         return {"message": "類似事例が見つかりませんでした。", "results": []}
 
-    file_names = list({doc.metadata.get("file_name") for doc in docs if doc.metadata.get("file_name")})[:10]
+    file_names = list(
+        {doc.metadata.get("file_name") for doc in docs if doc.metadata.get("file_name")}
+    )[:10]
 
-    examples = "\n".join([
-        f"{i+1}. 危険性: {doc.metadata.get('hazard')}\n   リスク低減措置: {doc.metadata.get('risk_mitigation')}\n   ファイル名: {doc.metadata.get('file_name')}"
-        for i, doc in enumerate(docs[:10])
-    ])
+    examples = "\n".join(
+        [
+            f"{i+1}. 危険性: {doc.metadata.get('hazard')}\n   リスク低減措置: {doc.metadata.get('risk_mitigation')}\n   ファイル名: {doc.metadata.get('file_name')}"
+            for i, doc in enumerate(docs[:10])
+        ]
+    )
 
     # 5. function calling用の関数定義
     function_def = build_function_def(file_names)
